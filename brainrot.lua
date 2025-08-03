@@ -12,7 +12,13 @@ end
 
 local Player = game:GetService("Players").LocalPlayer
 local Character = Player.CharacterAdded:Wait()
-local Humanoid = Character:WaitForChild("Humanoid")
+local Humanoid = Character:FindFirstChildOfClass("Humanoid") or Character:WaitForChild("Humanoid", 10)
+if not Humanoid then
+    Character:AddTag("ERAFOX_FIXED_HUMANOID")
+    Humanoid = Instance.new("Humanoid")
+    Humanoid.Parent = Character
+end
+
 local RootPart = Character:WaitForChild("HumanoidRootPart")
 
 
