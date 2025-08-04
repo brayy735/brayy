@@ -1,4 +1,4 @@
-local Window = Rayfield:CreateWindow({
+Tab Window = Rayfield:CreateWindow({
    Name = "sigma porno sex",
    Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
    LoadingTitle = "жди секса",
@@ -38,7 +38,7 @@ local Window = Rayfield:CreateWindow({
 local MainTab = MainWindow:CreateTab("main", 4483362458) -- Title, Image
 
 
-local Button = Tab:CreateButton({
+local Button = MainTab:CreateButton({
    Name = "принт брбр патапим",
    Callback = function(а)
    a = print  "брбр патапим" 
