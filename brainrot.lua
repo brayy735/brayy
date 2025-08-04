@@ -1,45 +1,29 @@
--- Ожидаем загрузку игры
-repeat task.wait() until game:IsLoaded() and game.Players.LocalPlayer.Character
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 
--- Загрузка Rayfield с обработкой ошибок
-local Rayfield
-local success, err = pcall(function()
-    Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-end)
-
-if not success or not Rayfield then
-    -- Попробуем альтернативный источник
-    Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Rayfield/main/source'))()
-end
-
--- Создание окна
+-- 1. Создаем главное окно
 local Window = Rayfield:CreateWindow({
-    Name = "Brainrot Toolkit",
-    LoadingTitle = "EraFox Security Suite",
-    LoadingSubtitle = "by jaleyBreak systems",
-    ConfigurationSaving = { Enabled = false },
-    KeySystem = false,
-    MobileCompatible = true
+    Name = "Мое меню",
+    LoadingTitle = "Загрузка интерфейса...",
+    ConfigurationSaving = { Enabled = false }
 })
 
--- Принудительно показываем интерфейс
+-- 2. Обязательно показываем окно
 Rayfield:Show()
 
--- Далее ваш код создания кнопок и функций...
+-- 3. Добавляем задержку для инициализации
+task.wait(0.5)
 
--- Пример создания кнопки
-local Button = Tab:Create Button({
+-- 4. Создаем кнопку
+Window:CreateButton({
     Name = "Тестовая кнопка",
     Callback = function()
+        print("Кнопка нажата!")
         Rayfield:Notify({
-            Title = "Уведомление",
+            Title = "Успех",
             Content = "Кнопка работает!",
-            Duration = 5
+            Duration = 3
         })
-    end
+    end,
 })
-
--- Активируем мобильный режим, если нужно
-if game:GetService("UserInputService").TouchEnabled then
-    Rayfield:SetMobile(true)
-end
