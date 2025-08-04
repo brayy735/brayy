@@ -25,7 +25,7 @@ Rayfield:Show()
 task.wait(0.5)
 
 -- 4. Создаем кнопку
-Window:CreateButton({
+local Button = Tab:CreateButton({
     Name = "Тестовая кнопка",
     Callback = function()
         print("Кнопка нажата!")
