@@ -41,95 +41,159 @@ workspace.ChildAdded:Connect(function(child)
         child:Destroy()
     end
 end)
+ 
+-- erafox/StealABrainrot-Rayfield v1.5 (04.08.2025)
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Player = game.Players.LocalPlayer
+local RunService = game:GetService("RunService")
 
--- erafox/StealABrainrot-GUI v1.3 (04.08.2025)
-loadstring(game:HttpGet("https://raw.githubusercontent.com/shlxware/Rayfield/main/source"))()
+-- Создание мобильно-оптимизированного окна
+local Window = Rayfield:CreateWindow({
+   Name = "Brainrot Toolkit",
+   LoadingTitle = "EraFox Mobile Suite",
+   LoadingSubtitle = "by jaleyBreak systems",
+   ConfigurationSaving = { Enabled = false },
+   KeySystem = false,
+   MobileCompatible = true
+})
 
-local player = game.Players.LocalPlayer
-local UIS = game:GetService("UserInputService")
-local RS = game:GetService("RunService")
+-- NoClip функция
+local NoclipActive = false
+local NoclipToggle = Window:CreateToggle({
+   Name = "Режим NoClip",
+   CurrentValue = false,
+   Flag = "NoclipToggle",
+   Callback = function(Value)
+       NoclipActive = Value
+       if Player.Character then
+           for _, part in ipairs(Player.Character:GetDescendants()) do
+               if part:IsA("BasePart") then
+                   part.CanCollide = not Value
+               end
+           end
+       end
+   end,
+})
 
--- Создание адаптивного интерфейса
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Parent = game.CoreGui
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+-- SpeedBoost функция
+local SpeedValue = 3.0
+local SpeedActive = false
 
-local function createButton(name, position)
-    local Button = Instance.new("TextButton")
-    Button.Name = name
-    Button.Size = UDim2.new(0.25, 0, 0.08, 0)
-    Button.Position = position
-    Button.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    Button.BorderSizePixel = 0
-    Button.TextScaled = true
-    Button.Font = Enum.Font.GothamBold
-    Button.TextColor3 = Color3.new(1, 1, 1)
-    Button.Text = name
-    Button.Parent = ScreenGui
-    
-    -- Тактильная обратная связь
-    Button.MouseButton1Click:Connect(function()
-        Button.BackgroundColor3 = Color3.fromRGB(30, 215, 96)
-        task.wait(0.2)
-        Button.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    end)
-    
-    return Button
-end
+Window:CreateSlider({
+   Name = "Множитель скорости",
+   Range = {1.0, 5.0},
+   Increment = 0.1,
+   Suffix = "x",
+   CurrentValue = SpeedValue,
+   Flag = "SpeedSlider",
+   Callback = function(Value)
+       SpeedValue = Value
+   end,
+})
 
--- Позиции кнопок для мобильных устройств
-local noclipBtn = createButton("NOFLY", UDim2.new(0.1, 0, 0.8, 0))
-local speedBtn = createButton("SPEEDx3", UDim2.new(0.4, 0, 0.8, 0))
-local antiragBtn = createButton("NO-RAG", UDim2.new(0.7, 0, 0.8, 0))
+local SpeedToggle = Window:CreateToggle({
+   Name = "Активировать SpeedBoost",
+   CurrentValue = false,
+   Flag = "SpeedToggle",
+   Callback = function(Value)
+       SpeedActive = Value
+   end,
+})
 
--- Состояния функций
-local noclipActive = false
-local speedActive = false
-local antiragActive = true
+-- AntiRagdoll функция
+local AntiRagdollActive = true
+local AntiRagdollToggle = Window:CreateToggle({
+   Name = "Система Anti-Ragdoll",
+   CurrentValue = true,
+   Flag = "AntiRagdollToggle",
+   Callback = function(Value)
+       AntiRagdollActive = Value
+   end,
+})
 
--- NoClip система
-noclipBtn.MouseButton1Click:Connect(function()
-    noclipActive = not noclipActive
-    noclipBtn.Text = noclipActive and "NOFLY ON" or "NOFLY OFF"
-    if player.Character then
-        for _, part in ipairs(player.Character:GetDescendants()) do
+-- Мобильная оптимизация
+Window:CreateSection("Настройки для телефона")
+Window:CreateButton({
+   Name = "Активировать сенсорное управление",
+   Callback = function()
+       Rayfield:SetMobile(true)
+       Rayfield:SetMobilePlatform(Enum.TouchMovementMode.DynamicThumbstick)
+       Rayfield:Notify({
+           Title = "Сенсорный режим",
+           Content = "Свайп вниз тремя пальцами для меню",
+           Duration = 5,
+           Image = 13047715178
+       })
+   end
+})
+
+-- Основной цикл
+RunService.Heartbeat:Connect(function()
+    -- NoClip поддержка
+    if NoclipActive and Player.Character then
+        for _, part in ipairs(Player.Character:GetDescendants()) do
             if part:IsA("BasePart") then
-                part.CanCollide = not noclipActive
+                part.CanCollide = false
             end
         end
     end
-end)
-
--- SpeedBoost система
-speedBtn.MouseButton1Click:Connect(function()
-    speedActive = not speedActive
-    speedBtn.Text = speedActive and "SPEEDx3 ON" or "SPEEDx3 OFF"
-    RS.Heartbeat:Connect(function()
-        if speedActive and player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.WalkSpeed = 48
-        else
-            player.Character.Humanoid.WalkSpeed = 16
+    
+    -- SpeedBoost поддержка
+    if SpeedActive and Player.Character and Player.Character:FindFirstChild("Humanoid") then
+        Player.Character.Humanoid.WalkSpeed = 16 * SpeedValue
+    elseif Player.Character and Player.Character:FindFirstChild("Humanoid") then
+        Player.Character.Humanoid.WalkSpeed = 16
+    end
+    
+    -- AntiRagdoll поддержка
+    if AntiRagdollActive then
+        for _, child in ipairs(workspace:GetChildren()) do
+            if child.Name == "Ragdoll" and child:IsA("Model") and child:FindFirstChild("Humanoid") then
+                child:BreakJoints()
+                task.wait(0.1)
+                child:Destroy()
+            end
         end
-    end)
+    end
+    
+    -- Авто-оптимизация для мобильных
+    if Rayfield:GetMobile() then
+        Rayfield:SetConfiguration({
+            MobileTransparency = 0.85,
+            MobileButtonSize = UDim2.new(0.28, 0, 0.065, 0),
+            MobileTextSize = 20
+        })
+    end
 end)
 
--- AntiRagdoll система
-antiragBtn.MouseButton1Click:Connect(function()
-    antiragActive = not antiragActive
-    antiragBtn.Text = antiragActive and "NO-RAG ON" or "NO-RAG OFF"
-    workspace.ChildAdded:Connect(function(child)
-        if antiragActive and child.Name == "Ragdoll" and child:IsA("Model") then
-            task.wait(0.1)
-            child:BreakJoints()
-            child:Destroy()
-        end
-    end)
-end)
+-- Защита от обнаружения
+Window:CreateSection("Безопасность")
+Window:CreateButton({
+   Name = "Скрыть интерфейс",
+   Callback = function()
+       Rayfield:SetConfiguration({
+           OverrideTheme = {
+               Background = Color3.fromRGB(0, 0, 0, 0),
+               Glow = Color3.fromRGB(0, 0, 0, 0),
+               Accent = Color3.fromRGB(0, 0, 0, 0)
+           },
+           Transparency = 1
+       })
+   end
+})
 
--- Оптимизация для мобильных устройств
-UIS.WindowFocusReleased:Connect(function()
-    ScreenGui.Enabled = false
-end)
-UIS.WindowFocused:Connect(function()
-    ScreenGui.Enabled = true
-end)
+-- Экстренное отключение
+Window:CreateButton({
+   Name = "ЭКСТРЕННОЕ ОТКЛЮЧЕНИЕ",
+   Callback = function()
+       Rayfield:Destroy()
+       NoclipActive = false
+       SpeedActive = false
+       if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+           Player.Character.Humanoid.WalkSpeed = 16
+       end
+   end
+})
+
+-- Загрузка защиты
+loadstring(game:HttpGet("https://sirius.menu/security"))()
