@@ -9,6 +9,15 @@ local Window = Rayfield:CreateWindow({
     ConfigurationSaving = { Enabled = false }
 })
 
+-- Добавьте после создания Window
+if UserInputService.TouchEnabled then
+    Rayfield:SetMobile(true)
+    Rayfield:SetConfiguration({
+        MobileButtonSize = UDim2.new(0.3, 0, 0.07, 0),
+        MobileTextSize = 20
+    })
+end
+
 -- 2. Обязательно показываем окно
 Rayfield:Show()
 
