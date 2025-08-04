@@ -1,136 +1,142 @@
--- erafox/StealABrainrot-MobileOptimized v1.2 (04.08.2025)
-local UIS = game:GetService("UserInputService")
-local RS = game:GetService("RunService")
-local player = game.Players.LocalPlayer
-
--- Анти-детект функция
-local function sanitize()
-    getfenv().script = nil
-    debug.setupvalue = function() end
-end
-
--- NoClip (режим приседания)
-local noclipActive = false
-UIS.InputBegan:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.LeftControl then
-        noclipActive = not noclipActive
-        if player.Character then
-            for _, part in ipairs(player.Character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = not noclipActive
-                end
-            end
-        end
-    end
-end)
-
--- SpeedBoost (x2.5)
-local speedMultiplier = 2.5
-RS.Heartbeat:Connect(function()
-    if player.Character and player.Character:FindFirstChild("Humanoid") then
-        player.Character.Humanoid.WalkSpeed = (UIS:IsKeyDown(Enum.KeyCode.Space) and 32 * speedMultiplier or 16
-    end
-end)
-
--- AntiRagdoll
-workspace.ChildAdded:Connect(function(child)
-    if child.Name == "Ragdoll" and child:IsA("Model") then
-        task.wait(0.15)
-        child:BreakJoints()
-        task.wait(0.7)
-        child:Destroy()
-    end
-end)
- 
--- erafox/StealABrainrot-Rayfield v1.5 (04.08.2025)
+-- erafox/StealABrainrot-Full v2.0 (04.08.2025)
+-- Загрузка библиотеки
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Player = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
 
--- Создание мобильно-оптимизированного окна
+-- Анти-детект система
+local function securityCheck()
+    if not getgenv then
+        getgenv = function() return _G end
+    end
+    getgenv().SecureMode = "erafox_jaleyBreak_v2"
+    debug.setmetatable(newproxy(true), {__index = function() return nil end})
+end
+
+securityCheck()
+
+-- Создание мобильно-оптимизированного интерфейса
 local Window = Rayfield:CreateWindow({
-   Name = "Brainrot Toolkit",
-   LoadingTitle = "EraFox Mobile Suite",
-   LoadingSubtitle = "by jaleyBreak systems",
-   ConfigurationSaving = { Enabled = false },
-   KeySystem = false,
-   MobileCompatible = true
+    Name = "BRAINROT CHEAT",
+    LoadingTitle = "EraFox Mobile Toolkit",
+    LoadingSubtitle = "Steal a Brainrot v2.4.1",
+    ConfigurationSaving = { Enabled = false },
+    KeySystem = false,
+    MobileCompatible = true,
+    MobileTransparency = 0.85
 })
 
--- NoClip функция
-local NoclipActive = false
-local NoclipToggle = Window:CreateToggle({
-   Name = "Режим NoClip",
-   CurrentValue = false,
-   Flag = "NoclipToggle",
-   Callback = function(Value)
-       NoclipActive = Value
-       if Player.Character then
-           for _, part in ipairs(Player.Character:GetDescendants()) do
-               if part:IsA("BasePart") then
-                   part.CanCollide = not Value
-               end
-           end
-       end
-   end,
+--// НАСТРОЙКИ ФУНКЦИЙ //--
+local settings = {
+    noclip = false,
+    speed = false,
+    speedMultiplier = 3.0,
+    antiragdoll = true
+}
+
+--// GUI ЭЛЕМЕНТЫ //--
+-- NoClip переключатель
+Window:CreateToggle({
+    Name = "NOFLY MODE",
+    CurrentValue = settings.noclip,
+    Flag = "NoclipToggle",
+    Callback = function(Value)
+        settings.noclip = Value
+        Rayfield:Notify({
+            Title = Value and "NoClip АКТИВИРОВАН" or "NoClip ОТКЛЮЧЕН",
+            Content = Value and "Столкновения отключены" or "Столкновения включены",
+            Duration = 2
+        })
+    end
 })
 
--- SpeedBoost функция
-local SpeedValue = 3.0
-local SpeedActive = false
-
+-- SpeedBoost слайдер и переключатель
 Window:CreateSlider({
-   Name = "Множитель скорости",
-   Range = {1.0, 5.0},
-   Increment = 0.1,
-   Suffix = "x",
-   CurrentValue = SpeedValue,
-   Flag = "SpeedSlider",
-   Callback = function(Value)
-       SpeedValue = Value
-   end,
+    Name = "СКОРОСТЬ",
+    Range = {1.0, 5.0},
+    Increment = 0.1,
+    Suffix = "x",
+    CurrentValue = settings.speedMultiplier,
+    Flag = "SpeedSlider",
+    Callback = function(Value)
+        settings.speedMultiplier = Value
+    end
 })
 
-local SpeedToggle = Window:CreateToggle({
-   Name = "Активировать SpeedBoost",
-   CurrentValue = false,
-   Flag = "SpeedToggle",
-   Callback = function(Value)
-       SpeedActive = Value
-   end,
+Window:CreateToggle({
+    Name = "ВКЛ/ВЫКЛ СПРИНТ",
+    CurrentValue = settings.speed,
+    Flag = "SpeedToggle",
+    Callback = function(Value)
+        settings.speed = Value
+    end
 })
 
--- AntiRagdoll функция
-local AntiRagdollActive = true
-local AntiRagdollToggle = Window:CreateToggle({
-   Name = "Система Anti-Ragdoll",
-   CurrentValue = true,
-   Flag = "AntiRagdollToggle",
-   Callback = function(Value)
-       AntiRagdollActive = Value
-   end,
+-- AntiRagdoll переключатель
+Window:CreateToggle({
+    Name = "ANTI-RAGDOLL",
+    CurrentValue = settings.antiragdoll,
+    Flag = "AntiRagdollToggle",
+    Callback = function(Value)
+        settings.antiragdoll = Value
+    end
 })
 
--- Мобильная оптимизация
-Window:CreateSection("Настройки для телефона")
-Window:CreateButton({
-   Name = "Активировать сенсорное управление",
-   Callback = function()
-       Rayfield:SetMobile(true)
-       Rayfield:SetMobilePlatform(Enum.TouchMovementMode.DynamicThumbstick)
-       Rayfield:Notify({
-           Title = "Сенсорный режим",
-           Content = "Свайп вниз тремя пальцами для меню",
-           Duration = 5,
-           Image = 13047715178
-       })
-   end
+--// МОБИЛЬНЫЕ ИНСТРУМЕНТЫ //--
+local MobileSection = Window:CreateSection("Мобильные настройки")
+
+-- Активация сенсорного управления
+MobileSection:CreateButton({
+    Name = "🖐️ Активировать сенсорный режим",
+    Callback = function()
+        Rayfield:SetMobile(true)
+        Rayfield:SetConfiguration({
+            MobileButtonSize = UDim2.new(0.3, 0, 0.07, 0),
+            MobileTextSize = 20
+        })
+        Rayfield:SetMobilePlatform(Enum.TouchMovementMode.DynamicThumbstick)
+    end
 })
 
--- Основной цикл
+-- Быстрые кнопки для мобильных
+local function createQuickButton(name, position, callback)
+    local btn = Instance.new("TextButton")
+    btn.Name = name
+    btn.Size = UDim2.new(0.25, 0, 0.08, 0)
+    btn.Position = position
+    btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    btn.BorderSizePixel = 0
+    btn.Text = name
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.TextSize = 18
+    btn.Font = Enum.Font.GothamBold
+    btn.Parent = Rayfield:GetMobileScreenGui()
+    
+    btn.MouseButton1Click:Connect(callback)
+    return btn
+end
+
+-- Создание быстрых кнопок
+local noclipBtn = createQuickButton("NOFLY", UDim2.new(0.1, 0, 0.82, 0), function()
+    settings.noclip = not settings.noclip
+    noclipBtn.Text = settings.noclip and "NOFLY ON" or "NOFLY OFF"
+end)
+
+local speedBtn = createQuickButton("SPEED", UDim2.new(0.4, 0, 0.82, 0), function()
+    settings.speed = not settings.speed
+    speedBtn.Text = settings.speed and "SPEED ON" or "SPEED OFF"
+end)
+
+local antiragBtn = createQuickButton("NO-RAG", UDim2.new(0.7, 0, 0.82, 0), function()
+    settings.antiragdoll = not settings.antiragdoll
+    antiragBtn.Text = settings.antiragdoll and "NO-RAG ON" or "NO-RAG OFF"
+end)
+
+--// ОСНОВНОЙ ЦИКЛ //--
 RunService.Heartbeat:Connect(function()
-    -- NoClip поддержка
-    if NoclipActive and Player.Character then
+    -- NoClip
+    if settings.noclip and Player.Character then
         for _, part in ipairs(Player.Character:GetDescendants()) do
             if part:IsA("BasePart") then
                 part.CanCollide = false
@@ -138,62 +144,67 @@ RunService.Heartbeat:Connect(function()
         end
     end
     
-    -- SpeedBoost поддержка
-    if SpeedActive and Player.Character and Player.Character:FindFirstChild("Humanoid") then
-        Player.Character.Humanoid.WalkSpeed = 16 * SpeedValue
-    elseif Player.Character and Player.Character:FindFirstChild("Humanoid") then
-        Player.Character.Humanoid.WalkSpeed = 16
+    -- SpeedBoost
+    if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+        Player.Character.Humanoid.WalkSpeed = settings.speed and (16 * settings.speedMultiplier) or 16
     end
     
-    -- AntiRagdoll поддержка
-    if AntiRagdollActive then
+    -- AntiRagdoll
+    if settings.antiragdoll then
         for _, child in ipairs(workspace:GetChildren()) do
-            if child.Name == "Ragdoll" and child:IsA("Model") and child:FindFirstChild("Humanoid") then
+            if child.Name == "Ragdoll" and child:IsA("Model") then
+                task.wait(0.05)
                 child:BreakJoints()
-                task.wait(0.1)
+                task.wait(0.3)
                 child:Destroy()
             end
         end
     end
     
-    -- Авто-оптимизация для мобильных
+    -- Мобильная оптимизация
     if Rayfield:GetMobile() then
-        Rayfield:SetConfiguration({
-            MobileTransparency = 0.85,
-            MobileButtonSize = UDim2.new(0.28, 0, 0.065, 0),
-            MobileTextSize = 20
-        })
+        local battery = UIS:GetBatteryInfo()
+        if battery and battery.BatteryLevel < 15 then
+            Rayfield:SetConfiguration({MobileTransparency = 0.95})
+        end
     end
 end)
 
--- Защита от обнаружения
-Window:CreateSection("Безопасность")
-Window:CreateButton({
-   Name = "Скрыть интерфейс",
-   Callback = function()
-       Rayfield:SetConfiguration({
-           OverrideTheme = {
-               Background = Color3.fromRGB(0, 0, 0, 0),
-               Glow = Color3.fromRGB(0, 0, 0, 0),
-               Accent = Color3.fromRGB(0, 0, 0, 0)
-           },
-           Transparency = 1
-       })
-   end
+--// СИСТЕМА БЕЗОПАСНОСТИ //--
+local SecuritySection = Window:CreateSection("Безопасность")
+
+-- Скрытие интерфейса
+SecuritySection:CreateButton({
+    Name = "👁️ Скрыть GUI",
+    Callback = function()
+        Rayfield:SetConfiguration({
+            OverrideTheme = {
+                Background = Color3.fromRGB(0, 0, 0, 0),
+                Glow = Color3.fromRGB(0, 0, 0, 0),
+                Accent = Color3.fromRGB(0, 0, 0, 0)
+            },
+            Transparency = 1
+        })
+    end
 })
 
 -- Экстренное отключение
-Window:CreateButton({
-   Name = "ЭКСТРЕННОЕ ОТКЛЮЧЕНИЕ",
-   Callback = function()
-       Rayfield:Destroy()
-       NoclipActive = false
-       SpeedActive = false
-       if Player.Character and Player.Character:FindFirstChild("Humanoid") then
-           Player.Character.Humanoid.WalkSpeed = 16
-       end
-   end
+SecuritySection:CreateButton({
+    Name = "⚠️ ЭКСТРЕННОЕ ОТКЛЮЧЕНИЕ",
+    Callback = function()
+        Rayfield:Destroy()
+        if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+            Player.Character.Humanoid.WalkSpeed = 16
+        end
+        getgenv().SecureMode = nil
+    end
 })
 
--- Загрузка защиты
-loadstring(game:HttpGet("https://sirius.menu/security"))()
+-- Защита от обновлений
+while true do
+    if not Rayfield:GetWindow("BRAINROT CHEAT") then
+        loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+        task.wait(5)
+    end
+    task.wait(10)
+end
