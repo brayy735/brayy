@@ -1,61 +1,78 @@
--- 1. Загрузка библиотеки с проверкой
-local Rayfield, loadError = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-if not Rayfield then
-    error("Ошибка загрузки Rayfield: "..tostring(loadError))
-end
-
--- 2. Создание окна с правильным синтаксисом
 local Window = Rayfield:CreateWindow({
-    Name = "Мое меню",
-    LoadingTitle = "Загрузка интерфейса",
-    LoadingSubtitle = "Пожалуйста подождите...",
-    ConfigurationSaving = { Enabled = false },
-    KeySystem = false, -- Отключить систему ключей
-    Discord = { Enabled = false } -- Отключить интеграцию Discord
+   Name = "sigma porno sex",
+   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+   LoadingTitle = "жди секса",
+   LoadingSubtitle = "пожалуйста",
+   ShowText = "brayy", -- for mobile users to unhide rayfield, change if you'd like
+   Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+
+   ToggleUIKeybind = "K", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
+
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = nil, -- Create a custom folder for your hub/game
+      FileName = "Big Hub"
+   },
+
+   Discord = {
+      Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
+      Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
+      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+   },
+
+   KeySystem = false, -- Set this to true to use our key system
+   KeySettings = {
+      Title = "Untitled",
+      Subtitle = "Key System",
+      Note = "No method of obtaining the key is provided", -- Use this to tell the user how to get a key
+      FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
+      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+      GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+      Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+   }
 })
 
--- 3. Ожидание инициализации
-repeat task.wait(0.1) until Window and Window.CreateButton
+local MainTab = MainWindow:CreateTab("main", 4483362458) -- Title, Image
 
--- 4. Создание кнопки с проверкой
-if type(Window.CreateButton) == "function" then
-    Window:CreateButton({
-        Name = "Тестовая кнопка",
-        Callback = function()
-            print("Кнопка работает!")
-        end
-    })
-else
-    warn("Метод CreateButton недоступен! Использую fallback")
-    
-    -- Fallback: ручное создание кнопки
-    local button = Instance.new("TextButton")
-    button.Name = "FallbackButton"
-    button.Size = UDim2.new(0.2, 0, 0.1, 0)
-    button.Position = UDim2.new(0.4, 0, 0.45, 0)
-    button.Text = "Нажми меня"
-    button.Parent = game:GetService("CoreGui")
-    
-    button.MouseButton1Click:Connect(function()
-        print("Fallback кнопка сработала!")
-    end)
-end
 
--- 5. Для мобильных устройств
-if game:GetService("UserInputService").TouchEnabled then
-    Rayfield:SetMobile(true)
-    Rayfield:SetConfiguration({
-        MobileButtonSize = UDim2.new(0.35, 0, 0.08, 0),
-        MobileTextSize = 22
-    })
-end
+local Button = Tab:CreateButton({
+   Name = "принт брбр патапим",
+   Callback = function(а)
+   a = print  "брбр патапим" 
+   end,
+})
 
--- 6. Диагностика
-print("Тип Rayfield:", typeof(Rayfield))
-print("Тип Window:", typeof(Window))
-print("Методы Window:")
-for k,v in pairs(Window) do
-    if type(v) == "function" then
-        print(" - "..k)
-    end
-end
+local Toggle = MainTab:CreateToggle({
+   Name = "NoClip",
+   CurrentValue = false,
+   Flag = "Toggle1", 
+   Callback = function(Value)
+      if Player.Character then
+           for _, part in ipairs(Player.Character:GetDescendants()) do
+               if part:IsA("BasePart") then
+                   part.CanCollide = not Value
+               end
+           end
+       end
+   end,
+   -- The variable (Value) is a boolean on whether the toggle is true or false
+   end,
+})
+
+local SpeedValue = 3.0
+local SpeedSlider = Tab:CreateSlider({
+   Name = "тип. флэш ускорялка",
+   Range = {1.0, 5.0},
+   Increment = 0.1,
+   Suffix = "x",
+   CurrentValue = SpeedValue,
+   Flag = "SpeexSlider", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+   Callback = function(Value)
+         SpeedValue = Value
+   -- The function that takes place when the slider changes
+   -- The variable (Value) is a number which correlates to the value the slider is currently at
+   end,
+})
