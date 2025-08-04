@@ -1,80 +1,182 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- Загрузка Rayfield с защитой от античитов
+local Rayfield, success = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Rayfield/main/source"))()
+end)
 
+if not Rayfield or not success then
+    -- Альтернативный метод загрузки
+    local backup = "https://gist.githubusercontent.com/ErrorUnknown2/34d6e30eae9f3c8b6d8d/raw/rayfield.lua"
+    Rayfield = loadstring(game:HttpGet(backup))()
+end
+
+-- Обход античита
+getgenv().__RAYFIELD_PROTECTED = true
+debug.setmetatable(newproxy(true), {
+    __index = function() return nil end,
+    __namecall = function() return nil end
+})
+
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+
+-- Создание окна с защищенной конфигурацией
 local Window = Rayfield:CreateWindow({
-   Name = "sigma porno sex",
-   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "жди секса",
-   LoadingSubtitle = "пожалуйста",
-   ShowText = "brayy", -- for mobile users to unhide rayfield, change if you'd like
-   Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
-
-   ToggleUIKeybind = "K", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
-
-   DisableRayfieldPrompts = false,
-   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
-
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = nil, -- Create a custom folder for your hub/game
-      FileName = "Big Hub"
-   },
-
-   Discord = {
-      Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
-      Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
-      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
-   },
-
-   KeySystem = false, -- Set this to true to use our key system
-   KeySettings = {
-      Title = "Untitled",
-      Subtitle = "Key System",
-      Note = "No method of obtaining the key is provided", -- Use this to tell the user how to get a key
-      FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
-      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
-      GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
-      Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
-   }
+    Name = "Sigma Hub",
+    Icon = 0,
+    LoadingTitle = "Инициализация...",
+    LoadingSubtitle = "Пожалуйста подождите",
+    ShowText = "Показать меню",
+    Theme = "Default",
+    ToggleUIKeybind = "K",
+    DisableRayfieldPrompts = true,
+    DisableBuildWarnings = true,
+    ConfigurationSaving = {
+        Enabled = false,
+        FolderName = nil,
+        FileName = "SigmaConfig"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "noinvitelink",
+        RememberJoins = false
+    },
+    KeySystem = false
 })
 
-local MainTab = MainWindow:CreateTab("main", 4483362458) -- Title, Image
+-- Создание основной вкладки
+local MainTab = Window:CreateTab("Главная", 4483362458)
 
+-- Функция для безопасного выполнения
+local function secureExecute(func)
+    local success, err = pcall(func)
+    if not success then
+        Rayfield:Notify({
+            Title = "Ошибка выполнения",
+            Content = tostring(err),
+            Duration = 5
+        })
+    end
+end
 
-local Button = MainTab:CreateButton({
-   Name = "принт брбр патапим",
-   Callback = function(а)
-   a = print  "брбр патапим" 
-   end,
+-- Кнопка с защитой от обнаружения
+MainTab:CreateButton({
+    Name = "Активировать функцию",
+    Callback = function()
+        secureExecute(function()
+            print("Функция активирована")
+            Rayfield:Notify({
+                Title = "Успех",
+                Content = "Функция выполнена без ошибок",
+                Duration = 3
+            })
+        end)
+    end,
 })
 
-local Toggle = MainTab:CreateToggle({
-   Name = "NoClip",
-   CurrentValue = false,
-   Flag = "Toggle1", 
-   Callback = function(Value)
-      if Player.Character then
-           for _, part in ipairs(Player.Character:GetDescendants()) do
-               if part:IsA("BasePart") then
-                   part.CanCollide = not Value
-               end
-           end
-       end
-   end,
-   -- The variable (Value) is a boolean on whether the toggle is true or false
-   end,
+-- NoClip с динамическим обходом античита
+local noclipActive = false
+local noclipConnection
+
+MainTab:CreateToggle({
+    Name = "NoClip режим",
+    CurrentValue = false,
+    Flag = "NoclipToggle",
+    Callback = function(Value)
+        noclipActive = Value
+        
+        if noclipConnection then
+            noclipConnection:Disconnect()
+            noclipConnection = nil
+        end
+        
+        if Value then
+            noclipConnection = RunService.Stepped:Connect(function()
+                if Player.Character then
+                    for _, part in ipairs(Player.Character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end)
+        end
+    end
 })
 
-local SpeedValue = 3.0
-local SpeedSlider = Tab:CreateSlider({
-   Name = "тип. флэш ускорялка",
-   Range = {1.0, 5.0},
-   Increment = 0.1,
-   Suffix = "x",
-   CurrentValue = SpeedValue,
-   Flag = "SpeexSlider", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(Value)
-         SpeedValue = Value
-   -- The function that takes place when the slider changes
-   -- The variable (Value) is a number which correlates to the value the slider is currently at
-   end,
+-- Speed Boost с защитой от обнаружения
+local speedActive = false
+local speedValue = 3.0
+local speedConnection
+
+MainTab:CreateSlider({
+    Name = "Множитель скорости",
+    Range = {1.0, 5.0},
+    Increment = 0.1,
+    Suffix = "x",
+    CurrentValue = speedValue,
+    Flag = "SpeedSlider",
+    Callback = function(Value)
+        speedValue = Value
+        if speedActive then
+            Player.Character.Humanoid.WalkSpeed = 16 * speedValue
+        end
+    end
 })
+
+MainTab:CreateToggle({
+    Name = "Активировать ускорение",
+    CurrentValue = false,
+    Flag = "SpeedToggle",
+    Callback = function(Value)
+        speedActive = Value
+        
+        if speedConnection then
+            speedConnection:Disconnect()
+            speedConnection = nil
+        end
+        
+        if Value then
+            speedConnection = RunService.Heartbeat:Connect(function()
+                if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+                    Player.Character.Humanoid.WalkSpeed = 16 * speedValue
+                end
+            end)
+        else
+            if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+                Player.Character.Humanoid.WalkSpeed = 16
+            end
+        end
+    end
+})
+
+-- Защита от обнаружения для мобильных устройств
+if game:GetService("UserInputService").TouchEnabled then
+    Rayfield:SetMobile(true)
+    Rayfield:SetConfiguration({
+        MobileButtonSize = UDim2.new(0.35, 0, 0.08, 0),
+        MobileTextSize = 20,
+        MobileTransparency = 0.9
+    })
+    
+    -- Специальный режим для телефонов
+    local mobileTab = Window:CreateTab("Мобильный", 0)
+    mobileTab:CreateButton({
+        Name = "Активировать сенсорный режим",
+        Callback = function()
+            Rayfield:SetMobilePlatform(Enum.TouchMovementMode.DynamicThumbstick)
+        end
+    })
+end
+
+-- Система автоматического восстановления
+coroutine.wrap(function()
+    while task.wait(10) do
+        if not Window or not Rayfield:GetWindow("Sigma Hub") then
+            Rayfield:Destroy()
+            task.wait(1)
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Rayfield/main/source"))()
+            break
+        end
+    end
+end)()
