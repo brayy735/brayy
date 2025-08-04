@@ -28,7 +28,7 @@ Rayfield:Show()
 -- Далее ваш код создания кнопок и функций...
 
 -- Пример создания кнопки
-Window:CreateButton({
+local Button = Tab:Create Button({
     Name = "Тестовая кнопка",
     Callback = function()
         Rayfield:Notify({
