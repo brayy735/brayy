@@ -13,8 +13,6 @@ local Window = Rayfield:CreateWindow({
     KeySystem = false,
 })
 
--- АКТИВИРУЕМ ОКНО
-Rayfield:Show()
 
 -- КРАТКАЯ ЗАДЕРЖКА ДЛЯ СТАБИЛИЗАЦИИ
 task.wait(1)
@@ -38,6 +36,13 @@ if game:GetService("UserInputService").TouchEnabled then
         MobileButtonSize = UDim2.new(0.3, 0, 0.07, 0),
         MobileTextSize = 20
     })
+end
+
+game:GetService("CoreGui").Rayfield.Enabled = true
+for _, element in ipairs(game:GetService("CoreGui").Rayfield:GetDescendants()) do
+    if element:IsA("Frame") then
+        element.Visible = true
+    end
 end
 
 -- Проверка видимости
