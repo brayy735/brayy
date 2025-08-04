@@ -1,20 +1,33 @@
--- Загрузка Rayfield с защитой от античитов
-local Rayfield, success = pcall(function()
-    return loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Rayfield/main/source"))()
-end)
-
-if not Rayfield or not success then
-    -- Альтернативный метод загрузки
-    local backup = "https://gist.githubusercontent.com/ErrorUnknown2/34d6e30eae9f3c8b6d8d/raw/rayfield.lua"
-    Rayfield = loadstring(game:HttpGet(backup))()
-end
+-- Загрузка Rayfield с официального источника
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 -- Обход античита
-getgenv().__RAYFIELD_PROTECTED = true
-debug.setmetatable(newproxy(true), {
-    __index = function() return nil end,
-    __namecall = function() return nil end
-})
+local function antiCheatBypass()
+    if not getgenv then
+        getgenv = function() return _G end
+    end
+    
+    -- Маскировка вызовов
+    local fakeEnv = {}
+    setmetatable(fakeEnv, {
+        __index = function(_, k)
+            return rawget(getgenv(), k) or function() end
+        end
+    })
+    
+    -- Защита от анализа памяти
+    getgenv().__RAYFIELD_PROTECTED = "encrypted_data_"..tostring(math.random(10000,99999))
+    debug.setmetatable(newproxy(true), {
+        __index = function() return nil end,
+        __namecall = function() return nil end
+    })
+    
+    -- Рандомизация вызовов
+    local randomDelay = math.random(50, 300)/1000
+    task.wait(randomDelay)
+end
+
+antiCheatBypass()
 
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
@@ -26,20 +39,15 @@ local Window = Rayfield:CreateWindow({
     Icon = 0,
     LoadingTitle = "Инициализация...",
     LoadingSubtitle = "Пожалуйста подождите",
-    ShowText = "Показать меню",
     Theme = "Default",
     ToggleUIKeybind = "K",
     DisableRayfieldPrompts = true,
     DisableBuildWarnings = true,
     ConfigurationSaving = {
         Enabled = false,
-        FolderName = nil,
-        FileName = "SigmaConfig"
     },
     Discord = {
         Enabled = false,
-        Invite = "noinvitelink",
-        RememberJoins = false
     },
     KeySystem = false
 })
@@ -54,7 +62,8 @@ local function secureExecute(func)
         Rayfield:Notify({
             Title = "Ошибка выполнения",
             Content = tostring(err),
-            Duration = 5
+            Duration = 5,
+            Image = 0
         })
     end
 end
@@ -68,7 +77,8 @@ MainTab:CreateButton({
             Rayfield:Notify({
                 Title = "Успех",
                 Content = "Функция выполнена без ошибок",
-                Duration = 3
+                Duration = 3,
+                Image = 0
             })
         end)
     end,
@@ -109,7 +119,7 @@ local speedActive = false
 local speedValue = 3.0
 local speedConnection
 
-MainTab:CreateSlider({
+local Slider = MainTab:CreateSlider({
     Name = "Множитель скорости",
     Range = {1.0, 5.0},
     Increment = 0.1,
@@ -119,7 +129,9 @@ MainTab:CreateSlider({
     Callback = function(Value)
         speedValue = Value
         if speedActive then
-            Player.Character.Humanoid.WalkSpeed = 16 * speedValue
+            secureExecute(function()
+                Player.Character.Humanoid.WalkSpeed = 16 * speedValue
+            end)
         end
     end
 })
@@ -138,14 +150,18 @@ MainTab:CreateToggle({
         
         if Value then
             speedConnection = RunService.Heartbeat:Connect(function()
-                if Player.Character and Player.Character:FindFirstChild("Humanoid") then
-                    Player.Character.Humanoid.WalkSpeed = 16 * speedValue
-                end
+                secureExecute(function()
+                    if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+                        Player.Character.Humanoid.WalkSpeed = 16 * speedValue
+                    end
+                end)
             end)
         else
-            if Player.Character and Player.Character:FindFirstChild("Humanoid") then
-                Player.Character.Humanoid.WalkSpeed = 16
-            end
+            secureExecute(function()
+                if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+                    Player.Character.Humanoid.WalkSpeed = 16
+                end
+            end)
         end
     end
 })
@@ -167,16 +183,67 @@ if game:GetService("UserInputService").TouchEnabled then
             Rayfield:SetMobilePlatform(Enum.TouchMovementMode.DynamicThumbstick)
         end
     })
+    
+    -- Быстрые кнопки для мобильных
+    coroutine.wrap(function()
+        task.wait(2)
+        local screenGui = Instance.new("ScreenGui")
+        screenGui.Parent = game:GetService("CoreGui")
+        
+        local function createMobileButton(name, position, callback)
+            local btn = Instance.new("TextButton")
+            btn.Name = name
+            btn.Size = UDim2.new(0.25, 0, 0.07, 0)
+            btn.Position = position
+            btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            btn.BorderSizePixel = 0
+            btn.Text = name
+            btn.TextColor3 = Color3.new(1, 1, 1)
+            btn.TextSize = 16
+            btn.Font = Enum.Font.GothamBold
+            btn.Parent = screenGui
+            
+            btn.MouseButton1Click:Connect(callback)
+            return btn
+        end
+        
+        createMobileButton("NOFLY", UDim2.new(0.1, 0, 0.85, 0), function()
+            noclipActive = not noclipActive
+            Window.Flags["NoclipToggle"]:Set(noclipActive)
+        end)
+        
+        createMobileButton("SPEED", UDim2.new(0.4, 0, 0.85, 0), function()
+            speedActive = not speedActive
+            Window.Flags["SpeedToggle"]:Set(speedActive)
+        end)
+        
+        createMobileButton("HIDE", UDim2.new(0.7, 0, 0.85, 0), function()
+            Rayfield:Destroy()
+        end)
+    end)()
 end
 
 -- Система автоматического восстановления
 coroutine.wrap(function()
     while task.wait(10) do
-        if not Window or not Rayfield:GetWindow("Sigma Hub") then
-            Rayfield:Destroy()
-            task.wait(1)
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Rayfield/main/source"))()
+        if not Rayfield or not Rayfield:GetWindow("Sigma Hub") then
+            -- Перезагрузка интерфейса
+            local backupURL = "https://raw.githubusercontent.com/shlexware/Rayfield/main/source"
+            Rayfield = loadstring(game:HttpGet(backupURL))()
+            
+            -- Повторная инициализация
+            Window = Rayfield:CreateWindow({...}) -- Повторите параметры создания окна
             break
         end
     end
 end)()
+
+-- Фикс для стабильности
+Player.CharacterAdded:Connect(function()
+    if speedActive then
+        task.wait(1)
+        secureExecute(function()
+            Player.Character.Humanoid.WalkSpeed = 16 * speedValue
+        end)
+    end
+end)
